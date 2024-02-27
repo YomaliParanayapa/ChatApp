@@ -1,5 +1,4 @@
-import 'dart:html';
-
+import 'package:chatapp/components/my_textfield.dart';
 import 'package:chatapp/services/auth/auth_service.dart';
 import 'package:chatapp/services/chat/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -44,6 +43,9 @@ class ChatPage extends StatelessWidget {
           Expanded(
             child: _buildMessageList(),
           ),
+
+          //user input
+          _buildUserInput(),
         ],
       ),
     );
@@ -78,6 +80,45 @@ class ChatPage extends StatelessWidget {
   Widget _buildMessageItem(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    return Text(data["message"]);
+    // is current user
+    bool isCurrentUser =
+        data['sender ID'] == _authService.getCurrentUser()!.uid;
+
+    // align message to the right if sender is the current  user, otherwise left
+    var alignmnet =
+        isCurrentUser ? Alignment.centerRight : Alignment.centerLeft;
+
+    return Container(
+      alignment: alignmnet,
+      child: Column(
+        crossAxisAlignment:
+            isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text(data["message"]),
+        ],
+      ),
+    );
+  }
+
+  // build message input
+  Widget _buildUserInput() {
+    return Row(
+      children: [
+        // textfield should take up most the space
+        Expanded(
+          child: MyTextField(
+            controller: _messageController,
+            hintText: "Type a message",
+            obscureText: false,
+          ),
+        ),
+
+        // send button
+        IconButton(
+          onPressed: sendMessage,
+          icon: const Icon(Icons.arrow_upward),
+        ),
+      ],
+    );
   }
 }
